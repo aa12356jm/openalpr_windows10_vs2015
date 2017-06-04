@@ -1,4 +1,11 @@
 #include "alpr_Interface.h"
+#include <QFileDialog>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QMessageBox>
+#include <QTableWidget>
+#include <QPushButton>
+
 
 const std::string MAIN_WINDOW_NAME = "ALPR main window";
 
@@ -25,7 +32,102 @@ alpr_Interface::alpr_Interface(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	ui.pushButton_plate_recognize->setStyleSheet("QPushButton{ border-image:url(: /icon /close) }"); //正常状态下 
+	ui.pushButton_plate_recognize->setStyleSheet("QPushButton:hover{ border - image:url(: / icon / close_on) }");//鼠标经过时显示这张  
+	ui.pushButton_plate_recognize->setStyleSheet("QPushButton:hover:pressed{ border - image:url(: / icon / close); }");//按下按钮时
+
+ 
+
+	//QTableWidget tableWidget;
+	ui.tableWidget_Result->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	ui.tableWidget_Result->setColumnCount(3);
+	ui.tableWidget_Result->setRowCount(5);
+
+	QStringList headers;
+	headers << "车牌号" << "概率"<<"模式匹配" ;
+	ui.tableWidget_Result->setHorizontalHeaderLabels(headers);
+
+// 	ui.tableWidget_Result->setItem(0, 0, new QTableWidgetItem(QString("0001")));
+// 	ui.tableWidget_Result->setItem(1, 0, new QTableWidgetItem(QString("0002")));
+// 	ui.tableWidget_Result->setItem(2, 0, new QTableWidgetItem(QString("0003")));
+// 	ui.tableWidget_Result->setItem(3, 0, new QTableWidgetItem(QString("0004")));
+// 	ui.tableWidget_Result->setItem(4, 0, new QTableWidgetItem(QString("0005")));
+// 	ui.tableWidget_Result->setItem(0, 1, new QTableWidgetItem(QString("20100112")));
+	//ui.horizontalLayout_3->addWidget(tableWidget);
+
+	QAction *openAction = new QAction(QIcon("icon/open.png"), tr("&打开"), this);
+	openAction->setShortcuts(QKeySequence::Open);
+	openAction->setStatusTip(tr("Open an image file"));
+	connect(openAction, SIGNAL(triggered()), this, SLOT(pushButton_open_clicked()));
+
+	QMenu *file = menuBar()->addMenu(tr("&文件"));
+	file->addAction(openAction);
+	//QToolBar *toolBar = addToolBar(tr("&File"));
+	ui.mainToolBar->addAction(openAction);
+
+	setMinimumSize(740, 520);
+	m_graphicsView_src = new QGraphicsView();
+	ui.horizontalLayout->addWidget(m_graphicsView_src);     //将自定义的组件添加到布局中
+	m_graphicsScene_src = new QGraphicsScene;  //new 一个新的场景对象
+	m_graphicsScene_src->setSceneRect(-370, -250, 740, 500);     //限定场景对象的显示区域
+	m_graphicsView_src->setScene(m_graphicsScene_src);          //将视图对象于场景相连
+
+	m_graphicsView_dst = new QGraphicsView();
+	ui.horizontalLayout->addWidget(m_graphicsView_dst);     //将自定义的组件添加到布局中
+	m_graphicsScene_dst = new QGraphicsScene;  //new 一个新的场景对象
+	m_graphicsScene_dst->setSceneRect(-370, -250, 740, 500);     //限定场景对象的显示区域
+	m_graphicsView_dst->setScene(m_graphicsScene_dst);          //将视图对象于场景相连
+
+	connect(ui.pushButton_plate_recognize, SIGNAL(clicked()), this, SLOT(pushButton_plate_recognize_clicked()));
 }
+
+QImage alpr_Interface::cvMat2QImage(const cv::Mat& mat)
+{
+	// 8-bits unsigned, NO. OF CHANNELS = 1  
+	if (mat.type() == CV_8UC1)
+	{
+		QImage image(mat.cols, mat.rows, QImage::Format_Indexed8);
+		// Set the color table (used to translate colour indexes to qRgb values)  
+		image.setColorCount(256);
+		for (int i = 0; i < 256; i++)
+		{
+			image.setColor(i, qRgb(i, i, i));
+		}
+		// Copy input Mat  
+		uchar *pSrc = mat.data;
+		for (int row = 0; row < mat.rows; row++)
+		{
+			uchar *pDest = image.scanLine(row);
+			memcpy(pDest, pSrc, mat.cols);
+			pSrc += mat.step;
+		}
+		return image;
+	}
+	// 8-bits unsigned, NO. OF CHANNELS = 3  
+	else if (mat.type() == CV_8UC3)
+	{
+		// Copy input Mat  
+		const uchar *pSrc = (const uchar*)mat.data;
+		// Create QImage with same dimensions as input Mat  
+		QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+		return image.rgbSwapped();
+	}
+	else if (mat.type() == CV_8UC4)
+	{
+		//qDebug() << "CV_8UC4";
+		// Copy input Mat  
+		const uchar *pSrc = (const uchar*)mat.data;
+		// Create QImage with same dimensions as input Mat  
+		QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
+		return image.copy();
+	}
+	else
+	{
+		//qDebug() << "ERROR: Mat could not be converted to QImage.";
+		return QImage();
+	}
+}
+
 int alpr_Interface::test()
 {
 	std::vector<std::string> filenames;
@@ -296,6 +398,75 @@ int alpr_Interface::test()
 	}
 
 	return 0;
+}
+
+void alpr_Interface::pushButton_plate_recognize_clicked()
+{
+
+	if (fileName.isEmpty())
+	{
+		QMessageBox::warning(this, "警告", "请先打开图像", QMessageBox::Default);
+		return;
+	}
+	Alpr alpr("us", "openalpr.conf");
+	alpr.setTopN(5);
+
+	alpr.setDefaultRegion("md");
+
+	if (alpr.isLoaded() == false)
+	{
+		std::cerr << "Error loading OpenALPR" << std::endl;
+		return ;
+	}
+	AlprResults results = alpr.recognize(fileName.toStdString());
+	vector<string> vplate_Characters;
+	vector<float> vplate_Confidence;
+	vector<bool> vplate_Pattern_match;
+	for (int i = 0; i < results.plates.size(); i++)
+	{
+		alpr::AlprPlateResult plate = results.plates[i];
+		std::cout << "plate" << i << ": " << plate.topNPlates.size() << " results" << std::endl;
+
+		for (int k = 0; k < plate.topNPlates.size(); k++)
+		{
+			alpr::AlprPlate candidate = plate.topNPlates[k];
+			vplate_Characters.push_back(candidate.characters);
+			vplate_Confidence.push_back(candidate.overall_confidence);
+			vplate_Pattern_match.push_back(candidate.matches_template);
+
+			std::cout << "    - " << candidate.characters << "\t confidence: " << candidate.overall_confidence;
+			std::cout << "\t pattern_match: " << candidate.matches_template << std::endl;
+		}
+	}
+
+	for (int i = 0; i < results.plates.size(); i++)
+	{
+		ui.tableWidget_Result->setItem(0, 0, new QTableWidgetItem(QString::fromStdString(vplate_Characters[i])));
+		ui.tableWidget_Result->setItem(0, 1, new QTableWidgetItem(QString("%1").arg(vplate_Confidence[i])));
+		ui.tableWidget_Result->setItem(2, 0, new QTableWidgetItem(QString("0003")));
+		ui.tableWidget_Result->setItem(3, 0, new QTableWidgetItem(QString("0004")));
+		ui.tableWidget_Result->setItem(4, 0, new QTableWidgetItem(QString("0005")));
+		ui.tableWidget_Result->setItem(0, 1, new QTableWidgetItem(QString("20100112")));
+	}
+}
+
+void alpr_Interface::pushButton_open_clicked()
+{
+	m_graphicsScene_src->clear();
+	fileName = QFileDialog::getOpenFileName(this,
+		tr("打开图像"),//对话框名称
+		".",//默认打开文件位置“.”文件目录"/"根目录
+		tr("image files(*.jpg *.png *.bmp)"));//筛选器
+
+Cv:Mat srcImg = imread(fileName.toStdString());
+
+	pixItem_src = new PixItem(&QPixmap::fromImage(cvMat2QImage(srcImg)));
+	//将该图元对象添加到场景中，并设置此图元在场景中的位置为中心（0，0）
+	m_graphicsScene_src->addItem(pixItem_src);
+	pixItem_src->setPos(0, 0);
+
+
+	//ui.label_src->setPixmap(QPixmap::fromImage(cvMat2QImage(srcImg)));
 }
 
 //图像类型是否支持，通过查看图像文件名后缀来确认

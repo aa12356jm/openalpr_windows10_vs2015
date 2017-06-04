@@ -55,15 +55,15 @@
     <ClCompile>
       <PreprocessorDefinitions>UNICODE;WIN32;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;OPENALPR_MAJOR_VERSION=2;OPENALPR_MINOR_VERSION=3;OPENALPR_PATCH_VERSION=0;INSTALL_PREFIX="C:/Program Files/src";OPENCV_MAJOR_VERSION=3;WINDOWS;NOMINMAX;SKIP_STATE_DETECTION=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories);D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\tesseract-ocr\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\tesseract-ocr\src\ccstruct;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\tesseract-ocr\src\ccmain;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\tesseract-ocr\src\ccutil;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\build\artifacts\2.2.0\v140\Release\x64\opencv;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\include\opencv;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\core\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\flann\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\imgproc\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\ml\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\objdetect\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\photo\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\video\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\imgcodecs\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\shape\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\videoio\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\highgui\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\superres\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\features2d\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\calib3d\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\stitching\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\videostab\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\opencv\modules\world\include;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\src\.\openalpr;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\src</AdditionalIncludeDirectories>
-      <DebugInformationFormat />
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\build\dist\2.2.0\v140\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\build\artifacts\2.2.0\v140\Release\x64\opencv\lib\Release\opencv_world320.lib;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\build\artifacts\2.2.0\v140\Release\x64\tesseract\libtesseract304-static.lib;D:\WorkSpace\openalpr_windows10_vs2015\openalpr\windows\build\artifacts\2.2.0\v140\Release\x64\tesseract\liblept170.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -82,6 +82,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pixitem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="alpr_Interface.h">
@@ -109,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_alpr_Interface.h" />
+    <ClInclude Include="pixitem.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="alpr_Interface.qrc">

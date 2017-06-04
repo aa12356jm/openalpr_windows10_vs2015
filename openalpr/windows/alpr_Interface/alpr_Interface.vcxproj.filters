@@ -55,6 +55,9 @@
     <ClCompile Include="GeneratedFiles\qrc_alpr_Interface.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="pixitem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="alpr_Interface.h">
@@ -70,6 +73,9 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_alpr_Interface.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pixitem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
