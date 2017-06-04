@@ -41,7 +41,7 @@ const std::string MAIN_WINDOW_NAME = "ALPR main window";
 const bool SAVE_LAST_VIDEO_STILL = false;
 const std::string LAST_VIDEO_STILL_LOCATION = "/tmp/laststill.jpg";
 const std::string WEBCAM_PREFIX = "/dev/video";
-MotionDetector motiondetector;
+MotionDetector motiondetector;//运动检测器
 bool do_motiondetection = true;
 
 /** Function Headers */
@@ -153,8 +153,8 @@ int main( int argc, const char** argv )
       while ((c = fgetc(stdin)) != EOF)
       {
         data.push_back((uchar) c);
-      }
-
+	  }
+	  //imdecode是从指定的内存缓存中读取一幅图像，imread是从指定文件载入一幅图像
       frame = cv::imdecode(cv::Mat(data), 1);
       if (!frame.empty())
       {
@@ -326,7 +326,7 @@ int main( int argc, const char** argv )
 
   return 0;
 }
-
+//图像类型是否支持，通过查看图像文件名后缀来确认
 bool is_supported_image(std::string image_file)
 {
   return (hasEndingInsensitive(image_file, ".png") || hasEndingInsensitive(image_file, ".jpg") || 
@@ -334,30 +334,34 @@ bool is_supported_image(std::string image_file)
 	  hasEndingInsensitive(image_file, ".jpeg") || hasEndingInsensitive(image_file, ".gif"));
 }
 
-
+//检测一幅图像中的车牌
 bool detectandshow( Alpr* alpr, cv::Mat frame, std::string region, bool writeJson)
 {
-
+	//记录开始时间
   timespec startTime;
   getTimeMonotonic(&startTime);
 
-  std::vector<AlprRegionOfInterest> regionsOfInterest;
+  std::vector<AlprRegionOfInterest> regionsOfInterest;//存储感兴趣区域
+  //如果需要运动中检测
   if (do_motiondetection)
   {
 	  cv::Rect rectan = motiondetector.MotionDetect(&frame);
 	  if (rectan.width>0) regionsOfInterest.push_back(AlprRegionOfInterest(rectan.x, rectan.y, rectan.width, rectan.height));
   }
   else regionsOfInterest.push_back(AlprRegionOfInterest(0, 0, frame.cols, frame.rows));
-  AlprResults results;
+ 
+  AlprResults results;//车牌检测结果
   if (regionsOfInterest.size()>0) results = alpr->recognize(frame.data, frame.elemSize(), frame.cols, frame.rows, regionsOfInterest);
 
+  //记录结束时间
   timespec endTime;
   getTimeMonotonic(&endTime);
+  //总处理时间
   double totalProcessingTime = diffclock(startTime, endTime);
   if (measureProcessingTime)
     std::cout << "Total Time to process image: " << totalProcessingTime << "ms." << std::endl;
   
-  
+  //如果需要，则将车牌结果写入到json中
   if (writeJson)
   {
     std::cout << alpr->toJson( results ) << std::endl;
