@@ -439,14 +439,13 @@ void alpr_Interface::pushButton_plate_recognize_clicked()
 		}
 	}
 
+	ui.tableWidget_Result->setColumnCount(3);
+	ui.tableWidget_Result->setRowCount(results.plates.size());
 	for (int i = 0; i < results.plates.size(); i++)
 	{
-		ui.tableWidget_Result->setItem(0, 0, new QTableWidgetItem(QString::fromStdString(vplate_Characters[i])));
-		ui.tableWidget_Result->setItem(0, 1, new QTableWidgetItem(QString("%1").arg(vplate_Confidence[i])));
-		ui.tableWidget_Result->setItem(2, 0, new QTableWidgetItem(QString("0003")));
-		ui.tableWidget_Result->setItem(3, 0, new QTableWidgetItem(QString("0004")));
-		ui.tableWidget_Result->setItem(4, 0, new QTableWidgetItem(QString("0005")));
-		ui.tableWidget_Result->setItem(0, 1, new QTableWidgetItem(QString("20100112")));
+		ui.tableWidget_Result->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(vplate_Characters[i])));
+		ui.tableWidget_Result->setItem(i, 1, new QTableWidgetItem(QString("%1").arg(vplate_Confidence[i])));
+		
 	}
 }
 
