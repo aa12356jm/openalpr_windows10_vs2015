@@ -66,12 +66,14 @@ namespace alpr
     }
     int multiplier = (index / 8) + 1;
     int bitwise_on = index % 8;
+
+	//根据车牌被分析的次数来改变每次变化的大小，
     float x_rotation = ((bitwise_on & 1) == 1) * multiplier * step;
     float y_rotation = ((bitwise_on & 2) == 2) * multiplier * step;
     float z_rotation = ((bitwise_on & 4) == 4) * multiplier * step;
     
     //cout << "Iteration: " << index << ": " << x_rotation << ", " << y_rotation << ", " << z_rotation << endl;
-    
+    //对图像施加改变
     prewarp->setTransform(WIDTH_HEIGHT, WIDTH_HEIGHT, x_rotation, y_rotation, z_rotation, 
             NO_PAN_VAL, NO_PAN_VAL, NO_MOVE_WIDTH_DIST, NO_MOVE_WIDTH_DIST);
     

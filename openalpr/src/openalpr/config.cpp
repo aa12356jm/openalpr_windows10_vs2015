@@ -394,15 +394,17 @@ namespace alpr
       std::cerr << "--(!) Country config file '" << country_config_file << "' does not exist.  Missing config for the country: '" << country<< "'!" << endl;
       return false;
     }
-
+	//根据输入的名字来加载runtime_data\config文件夹下对应国家的配置文件，
+	//比如输入的us,在此配置文件中定义ocr_language = lus，后面加载训练数据是根据lus来查找美国的训练数据的
     loadCountryValues(country_config_file, country);
 
+	//判断runtime_data\ocr\tessdata文件夹下的对应的训练数据文件是否存在
     if (fileExists((this->runtimeBaseDir + "/ocr/tessdata/" + this->ocrLanguage + ".traineddata").c_str()) == false)
     {
       std::cerr << "--(!) Runtime directory '" << this->runtimeBaseDir << "' is invalid.  Missing OCR data for the country: '" << country<< "'!" << endl;
       return false;
     }
-
+	//若此国家还没保存，则保存
     if (!country_is_loaded(country))
       this->loaded_countries.push_back(country);
     

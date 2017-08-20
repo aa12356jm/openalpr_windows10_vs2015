@@ -85,18 +85,21 @@ namespace alpr
 
   AlprFullDetails AlprImpl::recognizeFullDetails(cv::Mat img, std::vector<cv::Rect> regionsOfInterest)
   {
+	 //得到当前时间
     timespec startTime;
     getTimeMonotonic(&startTime);
 
 
     AlprFullDetails response;
 
-    int64_t start_time = getEpochTimeMs();
+    int64_t start_time = getEpochTimeMs();//记录开始时间
 
     // Fix regions of interest in case they extend beyond the bounds of the image
+	//对ROI区域进行修正，防止超过图像边界，若不指定regionsOfInterest，则默认regionsOfInterest区域为输入图像的全部
     for (unsigned int i = 0; i < regionsOfInterest.size(); i++)
       regionsOfInterest[i] = expandRect(regionsOfInterest[i], 0, 0, img.cols, img.rows);
 
+	//将所有的regionsOfInterest区域的矩形区域保存起来
     for (unsigned int i = 0; i < regionsOfInterest.size(); i++)
     {
       response.results.regionsOfInterest.push_back(AlprRegionOfInterest(regionsOfInterest[i].x, regionsOfInterest[i].y,
@@ -113,6 +116,7 @@ namespace alpr
     }
 
     // Convert image to grayscale if required
+	//若为彩色图像，则转换为灰度图
     Mat grayImg = img;
     if (img.channels() > 2)
       cvtColor( img, grayImg, CV_BGR2GRAY );
@@ -120,12 +124,15 @@ namespace alpr
     // Prewarp the image and ROIs if configured]
     std::vector<cv::Rect> warpedRegionsOfInterest = regionsOfInterest;
     // Warp the image if prewarp is provided
-    grayImg = prewarp->warpImage(grayImg);
+   ////如果配置文件中变量debugPrewarp为true：图像畸变处理，则进行处理
+	grayImg = prewarp->warpImage(grayImg);
     warpedRegionsOfInterest = prewarp->projectRects(regionsOfInterest, grayImg.cols, grayImg.rows, false);
 
     // Iterate through each country provided (typically just one)
     // and aggregate the results if necessary
     ResultAggregator country_aggregator(MERGE_PICK_BEST, topN, config);
+
+	//根据构造函数中指定的国家的名字，来加载对应的文件并处理图像，这部分是这个函数的核心
     for (unsigned int i = 0; i < config->loaded_countries.size(); i++)
     {
       if (config->debugGeneral)
@@ -136,10 +143,16 @@ namespace alpr
       // Reapply analysis for each multiple analysis value set in the config,
       // make a minor imperceptible tweak to the input image each time
       ResultAggregator iter_aggregator(MERGE_COMBINE, topN, config);
+
+	  //根据配置文件openalpr.conf中analysis_count的大小来判断对图像进行几次分析
+	  //如果设置这个变量的值大于1，则会任意性的多次对图像进行分析，这样会提升精度，但是会增加处理时间
       for (unsigned int iteration = 0; iteration < config->analysis_count; iteration++)
       {
+		  //当analysis_count大于1时才会使用此函数，如果等于1，则不处理
+		  //当第二次分析图像时，则会对图像做微小改变，每次分析时都会施加不同程度的改变
         Mat iteration_image = iter_aggregator.applyImperceptibleChange(grayImg, iteration);
         //drawAndWait(iteration_image);
+		//对图像进行分析，识别车牌区域和字符，这个是最核心函数
         AlprFullDetails iter_results = analyzeSingleCountry(img, iteration_image, warpedRegionsOfInterest);
         iter_aggregator.addResults(iter_results);
       }
@@ -161,6 +174,7 @@ namespace alpr
       cout << "Total Time to process image: " << diffclock(startTime, endTime) << "ms." << endl;
     }
 
+	//如果openalpr.conf配置文件中的变量debugGeneral和debugShowImages为true，则显示窗口并画出检测到的车牌区域
     if (config->debugGeneral && config->debugShowImages)
     {
       for (unsigned int i = 0; i < regionsOfInterest.size(); i++)
@@ -203,7 +217,7 @@ namespace alpr
 
     }
 
-
+	//如果openalpr.conf配置文件中的变量debugPauseOnFrame为true，则按键才继续
     if (config->debugPauseOnFrame)
     {
       // Pause indefinitely until they press a key
@@ -224,6 +238,7 @@ namespace alpr
 
     vector<PlateRegion> warpedPlateRegions;
     // Find all the candidate regions
+	//配置文件中变量为false,则跳过车牌检测，否则保存识别到的车牌区域
     if (config->skipDetection == false)
     {
       warpedPlateRegions = country_recognizers.plateDetector->detect(grayImg, warpedRegionsOfInterest);
@@ -468,6 +483,7 @@ namespace alpr
 
   AlprResults AlprImpl::recognize(cv::Mat img)
   {
+	  //默认regionsOfInterest区域为输入图像的全部
     std::vector<cv::Rect> regionsOfInterest;
     regionsOfInterest.push_back(cv::Rect(0, 0, img.cols, img.rows));
 
@@ -476,6 +492,7 @@ namespace alpr
 
   AlprResults AlprImpl::recognize(cv::Mat img, std::vector<cv::Rect> regionsOfInterest)
   {
+	  //若不指定regionsOfInterest，则默认regionsOfInterest区域为输入图像的全部
     AlprFullDetails fullDetails = recognizeFullDetails(img, regionsOfInterest);
     return fullDetails.results;
   }
