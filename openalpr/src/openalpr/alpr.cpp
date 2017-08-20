@@ -78,7 +78,12 @@ namespace alpr
     return impl->recognize(pixelData, bytesPerPixel, imgWidth, imgHeight, regionsOfInterest);
   }
 
-  std::string Alpr::toJson( AlprResults results )
+  alpr::AlprResults Alpr::recognize(cv::Mat img)
+  {
+	  return impl->recognize(img);
+  }
+
+  std::string Alpr::toJson(AlprResults results)
   {
     return AlprImpl::toJson(results);
   }

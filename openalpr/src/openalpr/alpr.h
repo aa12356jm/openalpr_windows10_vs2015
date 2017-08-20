@@ -24,6 +24,7 @@
 #include <vector>
 #include <fstream> 
 #include <stdint.h>
+#include <opencv2/core/core.hpp>
 
 #ifdef WIN32
   #define OPENALPR_DLL_EXPORT __declspec( dllexport )
@@ -161,6 +162,8 @@ namespace alpr
       // Recognize from raw pixel data.  
       AlprResults recognize(unsigned char* pixelData, int bytesPerPixel, int imgWidth, int imgHeight, std::vector<AlprRegionOfInterest> regionsOfInterest);
 
+	  //直接读取mat数据
+	  AlprResults recognize(cv::Mat img);
 
       static std::string toJson(const AlprResults results);
       static std::string toJson(const AlprPlateResult result);
