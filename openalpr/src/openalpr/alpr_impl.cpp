@@ -82,7 +82,7 @@ namespace alpr
     return config->loaded;
   }
 
-
+  //识别整幅图像的信息
   AlprFullDetails AlprImpl::recognizeFullDetails(cv::Mat img, std::vector<cv::Rect> regionsOfInterest)
   {
 	 //得到当前时间
@@ -241,6 +241,7 @@ namespace alpr
 	//配置文件中变量为false,则跳过车牌检测，否则保存识别到的车牌区域
     if (config->skipDetection == false)
     {
+		//检测车牌区域
       warpedPlateRegions = country_recognizers.plateDetector->detect(grayImg, warpedRegionsOfInterest);
     }
     else
@@ -329,8 +330,8 @@ namespace alpr
           std::cerr << "Valid patterns are located in the " << config->country << ".patterns file" << std::endl;
         }
 
-        country_recognizers.ocr->performOCR(&pipeline_data);
-        country_recognizers.ocr->postProcessor.analyze(plateResult.region, topN);
+        country_recognizers.ocr->performOCR(&pipeline_data);//字符识别
+        country_recognizers.ocr->postProcessor.analyze(plateResult.region, topN);//分析最可能的n个车牌
 
         timespec resultsStartTime;
         getTimeMonotonic(&resultsStartTime);
@@ -497,8 +498,7 @@ namespace alpr
     return fullDetails.results;
   }
 
-
-   std::vector<cv::Rect> AlprImpl::convertRects(std::vector<AlprRegionOfInterest> regionsOfInterest)
+  std::vector<cv::Rect> AlprImpl::convertRects(std::vector<AlprRegionOfInterest> regionsOfInterest)
    {
      std::vector<cv::Rect> rectRegions;
      for (unsigned int i = 0; i < regionsOfInterest.size(); i++)
@@ -558,8 +558,6 @@ namespace alpr
     return response;
   }
 
-
-
   std::string AlprImpl::toJson( const AlprPlateResult result )
   {
     cJSON *resultObj = createJsonObj( &result );
@@ -575,6 +573,7 @@ namespace alpr
     
     return response;
   }
+  
   cJSON* AlprImpl::createJsonObj(const AlprPlateResult* result)
   {
     cJSON *root, *coords, *candidates;
@@ -732,8 +731,6 @@ namespace alpr
     }
   }
 
-
-
   void AlprImpl::setDetectRegion(bool detectRegion)
   {
     
@@ -741,10 +738,12 @@ namespace alpr
 
 
   }
+  
   void AlprImpl::setTopN(int topn)
   {
     this->topN = topn;
   }
+  
   void AlprImpl::setDefaultRegion(string region)
   {
     this->defaultRegion = region;
@@ -757,8 +756,7 @@ namespace alpr
     ss << OPENALPR_MAJOR_VERSION << "." << OPENALPR_MINOR_VERSION << "." << OPENALPR_PATCH_VERSION;
     return ss.str();
   }
-  
-  
+   
   void AlprImpl::loadRecognizers() {
     for (unsigned int i = 0; i < config->loaded_countries.size(); i++)
     {
@@ -782,8 +780,7 @@ namespace alpr
 
     }
   }
-
-  
+ 
   cv::Mat AlprImpl::getCharacterTransformMatrix(PipelineData* pipeline_data ) {
     std::vector<Point2f> crop_corners;
     crop_corners.push_back(Point2f(0,0));
@@ -799,7 +796,6 @@ namespace alpr
   
   std::vector<AlprCoordinate> AlprImpl::getCharacterPoints(cv::Rect char_rect, cv::Mat transmtx ) {
     
-
     std::vector<Point2f> points;
     points.push_back(Point2f(char_rect.x, char_rect.y));
     points.push_back(Point2f(char_rect.x + char_rect.width, char_rect.y));
@@ -823,6 +819,5 @@ namespace alpr
     
     return cornersvector;
   }
-
 
 }

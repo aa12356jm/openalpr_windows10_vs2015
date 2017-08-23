@@ -1,1 +1,3 @@
-此代码是按照csdn文章修改，编译成功的代码，直接按照教程http://blog.csdn.net/cym1990/article/details/72791150执行build.ps1即可
+此代码是按照csdn文章修改，编译成功的代码，
+直接按照教程http://blog.csdn.net/cym1990/article/details/72791150执行build.ps1即可
+教程中是按照release版本编译的，可修改字段release为debug即可重新编译为debug版本。

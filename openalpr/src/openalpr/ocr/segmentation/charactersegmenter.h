@@ -31,8 +31,6 @@
 
 namespace alpr
 {
-
-
   const cv::Scalar COLOR_DEBUG_EDGE(0,0,255); // Red
   const cv::Scalar COLOR_DEBUG_SPECKLES(0,0,255); // Red
   const cv::Scalar COLOR_DEBUG_MIN_HEIGHT(255,0,0); // Blue
@@ -43,7 +41,6 @@ namespace alpr
 
   class CharacterSegmenter
   {
-
     public:
       CharacterSegmenter(PipelineData* pipeline_data);
       virtual ~CharacterSegmenter();

@@ -54,6 +54,7 @@ namespace alpr
     tesseract.End();
   }
   
+  //Ê¶±ðÏß
   std::vector<OcrChar> TesseractOcr::recognize_line(int line_idx, PipelineData* pipeline_data) {
 
     const int SPACE_CHAR_CODE = 32;

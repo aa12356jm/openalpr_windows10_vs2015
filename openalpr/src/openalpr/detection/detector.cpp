@@ -103,6 +103,7 @@ namespace alpr
       
       // Sanity check.  If roi width or height is less than minimum possible plate size,
       // then skip it
+	  //车牌区域检查，如果检测到的ROI区域的宽度或者高度小于对应国家的配置文件中指定的车牌的最小宽度和高度，就忽略此ROI区域
       if ((roi.width < config->minPlateSizeWidthPx) || 
           (roi.height < config->minPlateSizeHeightPx))
         continue;
@@ -113,16 +114,16 @@ namespace alpr
       int h = cropped.size().height;
       int offset_x = roi.x;
       int offset_y = roi.y;
-      float scale_factor = computeScaleFactor(w, h);
+      float scale_factor = computeScaleFactor(w, h);//计算图像需要的缩放大小
 
       if (scale_factor != 1.0)
-        resize(cropped, cropped, Size(w * scale_factor, h * scale_factor));
+        resize(cropped, cropped, Size(w * scale_factor, h * scale_factor));//对图像进行缩放处理
 
     
       float maxWidth = ((float) w) * (config->maxPlateWidthPercent / 100.0f) * scale_factor;
       float maxHeight = ((float) h) * (config->maxPlateHeightPercent / 100.0f) * scale_factor;
-      Size minPlateSize(config->minPlateSizeWidthPx, config->minPlateSizeHeightPx);
-      Size maxPlateSize(maxWidth, maxHeight);
+      Size minPlateSize(config->minPlateSizeWidthPx, config->minPlateSizeHeightPx);//车牌的最小区域
+      Size maxPlateSize(maxWidth, maxHeight);//车牌的最大区域
     
       vector<Rect> allRegions = find_plates(cropped, minPlateSize, maxPlateSize);
       
@@ -178,11 +179,11 @@ namespace alpr
     return config->getCascadeRuntimeDir() + config->detectorFile;
   }
 
-
+  //计算图像的缩放因子大小，如果图像的宽度或者高度大于openalpr.conf配置文件中指定的宽度或者高度，则计算这个比例大小
   float Detector::computeScaleFactor(int width, int height) {
     
     float scale_factor = 1.0;
-    
+    //如果图像的宽度大于openalpr.conf文件中指定的最大宽度，则计算缩放因子，后续对图像进行缩放处理
     if (width > config->maxDetectionInputWidth)
     {
       // The frame is too wide

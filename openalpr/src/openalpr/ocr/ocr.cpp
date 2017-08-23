@@ -30,17 +30,15 @@ namespace alpr
   OCR::~OCR() {
   }
 
-  
+  //OCR×Ö·ûÊ¶±ð
   void OCR::performOCR(PipelineData* pipeline_data)
-  {
-    
+  {   
     timespec startTime;
     getTimeMonotonic(&startTime);
 
     segment(pipeline_data);
     
     postProcessor.clear();
-
 
     int absolute_charpos = 0;
     for (unsigned int line_idx = 0; line_idx < pipeline_data->textLines.size(); line_idx++)
